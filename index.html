@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Conceitual: Química da Vida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chart {
+            width: 80%;
+            height: 80%;
+        }
+        .node circle {
+            fill: #48cae4;
+            stroke: #0077b6;
+            stroke-width: 1.5px;
+        }
+        .node text {
+            font-size: 14px;
+            fill: #023e8a;
+            pointer-events: none;
+        }
+        .link {
+            fill: none;
+            stroke: #90e0ef;
+            stroke-width: 1.5px;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: 120px;
+            padding: 5px;
+            font: 12px sans-serif;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            pointer-events: none;
+            box-shadow: 0px 0px 2px 0px #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart"></div>
+    <div id="tooltip" class="tooltip" style="opacity: 0;"></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        const data = {
+            name: "Química da Vida",
+            children: [
+                {
+                    name: "Elementos Essenciais",
+                    children: [
+                        { name: "Carbono (C)" },
+                        { name: "Hidrogênio (H)" },
+                        { name: "Oxigênio (O)" },
+                        { name: "Nitrogênio (N)" },
+                        { name: "Fósforo (P)" },
+                        { name: "Enxofre (S)" },
+                    ],
+                },
+                {
+                    name: "Água",
+                    children: [
+                        { name: "Propriedades" },
+                        { name: "Funções" },
+                    ],
+                },
+                {
+                    name: "Moléculas Orgânicas",
+                    children: [
+                        { name: "Carboidratos" },
+                        { name: "Lipídios" },
+                        { name: "Proteínas" },
+                        { name: "Ácidos Nucleicos" },
+                    ],
+                },
+                {
+                    name: "Moléculas Inorgânicas",
+                    children: [
+                        { name: "Sais Minerais" },
+                        { name: "Gases" },
+                    ],
+                },
+                {
+                    name: "Vitaminas",
+                    children: [
+                        { name: "Hidrossolúveis" },
+                        { name: "Lipossolúveis" },
+                    ],
+                },
+            ],
+        };
+
+        const width = 800;
+        const height = 600;
+
+        const svg = d3
+            .select("#chart")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const root = d3.hierarchy(data);
+
+        const treeLayout = d3.tree().size([width - 160, height - 160]);
+        treeLayout(root);
+
+        svg
+            .selectAll(".link")
+            .data(root.links())
+            .enter()
+            .append("path")
+            .attr("class", "link")
+            .attr("d", d3.linkHorizontal()
+                .x(d => d.y + 80)
+                .y(d => d.x + 80)
+            );
+
+        const node = svg
+            .selectAll(".node")
+            .data(root.descendants())
+            .enter()
+            .append("g")
+            .attr("class", "node")
+            .attr("transform", d => `translate(${d.y + 80},${d.x + 80})`);
+
+        node
+            .append("circle")
+            .attr("r", 10);
+
+        node
+            .append("text")
+            .attr("dy", 4)
+            .attr("x", d => (d.children ? -12 : 12))
+            .style("text-anchor", d => (d.children ? "end" : "start"))
+            .text(d => d.data.name);
+
+        const tooltip = d3.select("#tooltip");
+
+        node.on("mouseover", (event, d) => {
+            tooltip.transition().duration(200).style("opacity", .9);
+            tooltip.html(d.data.name)
+                .style("left", (event.pageX + 5) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        });
+
+        node.on("mouseout", (d) => {
+            tooltip.transition().duration(500).style("opacity", 0);
+        });
+    </script>
+</body>
+</html>
